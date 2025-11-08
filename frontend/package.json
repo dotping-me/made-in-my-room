@@ -1,0 +1,26 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "A Ripple application created with create-ripple",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "serve": "vite preview"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vite": "^7.1.4",
+    "@ripple-ts/vite-plugin": "latest",
+    "@ripple-ts/typescript-plugin": "latest"
+  },
+  "dependencies": {
+    "ripple": "latest"
+  }
+}
