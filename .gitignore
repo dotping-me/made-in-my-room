@@ -1,1 +1,7 @@
+# Backend files
+# ...
+
+# Frontend files
 frontend/node_modules/
+frontend/.svelte-kit
+frontend/.npmrc
