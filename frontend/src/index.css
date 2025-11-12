@@ -46,9 +46,12 @@ button {
     cursor: pointer;
     transition: border-color 0.25s;
 }
-button:hover {
-    border-color: #646cff;
+
+button:hover,
+input[type="submit"]:hover {
+    cursor: pointer;
 }
+
 button:focus,
 button:focus-visible {
     outline: 4px auto -webkit-focus-ring-color;
