@@ -14,7 +14,9 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Registering routes
-	mux.HandleFunc("/api/lobby", handlers.LobbyHandler)
+	mux.HandleFunc("/api/rooms", handlers.RoomHandler)
+	mux.HandleFunc("/api/rooms/exists", handlers.DoesRoomExist)
+
 	mux.HandleFunc("/ws", handlers.WebsocketHandler)
 
 	// Allows Cross-Origin comms
@@ -23,6 +25,6 @@ func main() {
 		AllowCredentials: true,
 	}).Handler(mux)
 
-	fmt.Println("mux listening on [http://localhost:8080]")
+	fmt.Println("HTTP Multiplexer listening on [http://localhost:8080]")
 	log.Fatal(http.ListenAndServe(":8080", handler))
 }
