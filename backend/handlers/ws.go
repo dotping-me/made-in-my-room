@@ -50,10 +50,16 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	defer conn.Close()
 
+	// Catching GET params
 	roomCode := r.URL.Query().Get("room")
+	if roomCode == "" {
+		fmt.Println("Room Code missing!")
+		return
+	}
+
 	playerName := r.URL.Query().Get("name")
-	if roomCode == "" || playerName == "" {
-		fmt.Println("Room Code and Player Name are not provided!")
+	if playerName == "" {
+		fmt.Println("Player Name missing!")
 		return
 	}
 
@@ -67,9 +73,8 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		_, msg, err := conn.ReadMessage()
 
 		// Most likely a disconnection
-		// TODO: Remove room from memmory if it has no player
 		if err != nil {
-			fmt.Println("Player disconnected:", player.Name)
+			fmt.Println("Player [", player.Name, "] disconnected from Room", roomCode)
 			break
 		}
 
@@ -88,19 +93,7 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Remove player from room on disconnect
-		Manager.Lock()
-		room := Manager.Rooms[roomCode]
-
-		remainingPlayers := []Player{}
-		for _, p := range room.Players {
-			if p.Conn != conn {
-				remainingPlayers = append(remainingPlayers, p)
-			}
-		}
-
-		room.Players = remainingPlayers
-		Manager.Unlock()
-
-		broadcast(roomCode, "players", room.Players)
+		Manager.RemovePlayerFromRoom(roomCode, player)
+		broadcast(roomCode, "players", Manager.Rooms[roomCode].Players)
 	}
 }

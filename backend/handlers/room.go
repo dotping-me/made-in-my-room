@@ -2,14 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/dotping-me/made-in-my-room/utils"
 )
-
-// NOTE: Using in-memory storgare for all this,
-// 		 it should be fine if the player count is small but then we might
-// 		 might have to switch to using a database solution
 
 // Checks if a room with specified code exists
 func DoesRoomExist(w http.ResponseWriter, r *http.Request) {
@@ -27,8 +24,6 @@ func DoesRoomExist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Check if room is full too
-
 	json.NewEncoder(w).Encode(map[string]bool{"exists": true})
 }
 
@@ -36,7 +31,7 @@ func DoesRoomExist(w http.ResponseWriter, r *http.Request) {
 func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// TODO: Do I add a loop to retry until a unique code is CERTAINLY generated?
+	// NOTE: Do I add a loop to retry until a unique code is CERTAINLY generated?
 	// Or are the codes unique enough on their own?
 
 	code := utils.GenerateRandomCode(4)
@@ -48,19 +43,8 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Creates room
-	Manager.Rooms[code] = &Room{Code: code, Players: []Player{}}
+	Manager.Rooms[code] = &Room{Code: code, Players: []Player{}, Cap: 8}
+	fmt.Println("Created Room", code)
+
 	json.NewEncoder(w).Encode(map[string]string{"code": code})
-}
-
-func RoomHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	// Hardcoded rooms for now
-	if len(Manager.Rooms) == 0 {
-		Manager.Rooms["1"] = &Room{Code: "1"}
-		Manager.Rooms["2"] = &Room{Code: "2"}
-	}
-
-	rooms := Manager.ListRooms()
-	json.NewEncoder(w).Encode(rooms)
 }
