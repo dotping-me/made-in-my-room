@@ -1,34 +1,44 @@
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 interface Player {
     name: string;
 }
 
 export default function Room() {
-    const { id } = useParams<{ id: string }>();
-    const [searchParams] = useSearchParams();
+    const { code } = useParams<{ code: string }>();
+    const nav = useNavigate();
 
     const [username, setUsername] = useState<string>("");
     const [roomPlayers, setRoomPlayers] = useState<Player[]>([]);
     const [connected, setConnected] = useState<boolean>(false);
 
-    // Set username on load
+    // On Mount
     useEffect(() => {
-        const nameFromQuery = searchParams.get("username");
-        if (nameFromQuery) {
-            setUsername(decodeURIComponent(nameFromQuery));
-        }
-    }, [searchParams]);
 
+        // Checks if username exists
+        let u: string | null = sessionStorage.getItem("username");
+        console.log(u);
+        if (!u) { nav("/"); return; } // Returns to root if no username set
+
+        setUsername(u);
+
+        // Checks if room exists (Redirects player if not)
+        fetch("/api/rooms/exists?room=" + code)
+        .then((res) => { return res.json() })
+        .then((json) => {
+            if (!json.exists) {
+                nav("/");
+                return;
+            }
+        });
+    }, []);
+
+    // Establishes connection
     useEffect(() => {
-        if (!username) {
-            return
-        };
-
-        const ws = new WebSocket(`ws://localhost:8080/ws?room=${id}&name=${username}`);
+        const ws = new WebSocket(`ws://localhost:8080/ws?room=${code}&name=${username}`);
         ws.onopen = () => {
-            console.log(`Connected to room ${id}`);
+            console.log(`Connected to room ${code}`);
             setConnected(true);
         };
 
@@ -45,7 +55,7 @@ export default function Room() {
                 }
             
             } catch (err) {
-                console.error("Invalid WS message:", e.data);
+                console.error("Invalcode WS message:", e.data);
             }
         };
 
@@ -60,30 +70,11 @@ export default function Room() {
 
         return () => ws.close();
 
-    }, [id, username]);
-
-    // Before joining, ask the user for a name
-    if (!username) {
-    return (
-    <div className="p-4">
-    <h1 className="text-xl mb-2">Enter your name to join Room {id}</h1>
-    <input
-    type="text"
-    placeholder="Your name"
-    className="border px-2 py-1 rounded"
-    onKeyDown={(e) => {
-    if (e.key === "Enter" && e.currentTarget.value.trim()) {
-    setUsername(e.currentTarget.value.trim());
-    }
-    }}
-    />
-    </div>
-    );
-    }
+    }, [username]);
 
     return (
         <div>
-            <h1>Room {id}</h1>
+            <h1>Room {code}</h1>
             <p>
                 {connected ? (
                     <span>Connected as {username}</span>

@@ -16,6 +16,7 @@ func main() {
 	// Registering routes
 	mux.HandleFunc("/api/rooms", handlers.RoomHandler)
 	mux.HandleFunc("/api/rooms/exists", handlers.DoesRoomExist)
+	mux.HandleFunc("/api/rooms/new", handlers.CreateRoom)
 
 	mux.HandleFunc("/ws", handlers.WebsocketHandler)
 

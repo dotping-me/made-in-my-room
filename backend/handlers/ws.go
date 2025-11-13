@@ -65,9 +65,12 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	// Listens and handles all other messages received until disconnection
 	for {
 		_, msg, err := conn.ReadMessage()
+
+		// Most likely a disconnection
+		// TODO: Remove room from memmory if it has no player
 		if err != nil {
 			fmt.Println("Player disconnected:", player.Name)
-			break // Most likely a disconnection
+			break
 		}
 
 		// Received Websocket message (typically JSON)

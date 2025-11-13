@@ -3,6 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/dotping-me/made-in-my-room/utils"
 )
 
 // NOTE: Using in-memory storgare for all this,
@@ -28,6 +30,26 @@ func DoesRoomExist(w http.ResponseWriter, r *http.Request) {
 	// TODO: Check if room is full too
 
 	json.NewEncoder(w).Encode(map[string]bool{"exists": true})
+}
+
+// Creates a room and returns room code
+func CreateRoom(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// TODO: Do I add a loop to retry until a unique code is CERTAINLY generated?
+	// Or are the codes unique enough on their own?
+
+	code := utils.GenerateRandomCode(4)
+	_, exists := Manager.Rooms[code]
+
+	if code == "" || exists {
+		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to Generate Code!"})
+		return
+	}
+
+	// Creates room
+	Manager.Rooms[code] = &Room{Code: code, Players: []Player{}}
+	json.NewEncoder(w).Encode(map[string]string{"code": code})
 }
 
 func RoomHandler(w http.ResponseWriter, r *http.Request) {

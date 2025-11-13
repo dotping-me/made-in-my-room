@@ -2,6 +2,8 @@
 //       For example, "/rooms/new" that just creates a new room and redirects
 //                    player to that directly
 
+// TODO: Handle errors, feedback and just reactive stuff...
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -13,12 +15,6 @@ export default function Lobby(this: any) {
     const [username, setUsername] = useState<string>("");
     const [roomCode, setRoomCode] = useState<string>("");
     const nav = useNavigate();
-
-    // On Mount 
-    // NOTE: Just temporary to make backend create rooms
-    useEffect(() => {
-        fetch("/api/rooms")
-    }, []);
 
     useEffect(() => {
 
@@ -39,14 +35,44 @@ export default function Lobby(this: any) {
 
     }, [roomCode]);
 
-    // TODO: Handle errors, feedback and just reactive stuff...
-    const joinRoom = () => {
-        if (username.trim().length < 4) {
-            console.log("Username must be at least 5 characters!");
+    // Makes a request to backend to create room, receives code and redirects
+    const createRoom = () => {
+        if (username.trim().length < 2) {
+            console.log("Username must be at least 3 characters!");
             return;
         }
 
-        nav(`/room/${roomCode}?username=${encodeURIComponent(username)}`);
+        // Request to create room
+        fetch("/api/rooms/new")
+        .then((res) => { return res.json() })
+        .then((json) => {
+            console.log(json);
+
+            // Handles JSON
+            if (json.error) {
+                console.log(json.error);
+                return;
+            }
+
+            // Redirects
+            sessionStorage.setItem("username", username.trim());
+            nav(`/room/${json.code}`);
+
+        })
+        .catch((err) => {
+            console.log(err);
+        }); 
+    }
+
+    // Validation, then redirects to room
+    const joinRoom = () => {
+        if (username.trim().length < 2) {
+            console.log("Username must be at least 3 characters!");
+            return;
+        }
+
+        sessionStorage.setItem("username", username.trim());
+        nav(`/room/${roomCode}`);
     };
 
     return (
@@ -64,6 +90,9 @@ export default function Lobby(this: any) {
                     <input type="text" name="room" id="room"
                         onBlur={(e) => setRoomCode((e.target as HTMLInputElement).value.trim())} />
                 </div>
+
+                <input type="button" value="Create Room" 
+                    onClick={createRoom} />
 
                 <input type="button" value="Join Room" 
                     onClick={joinRoom} />
